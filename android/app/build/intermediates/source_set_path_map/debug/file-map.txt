@@ -25,3 +25,4 @@ com.todoapp-mergeDebugResources-23 D:\TodoApp\android\app\build\intermediates\in
 com.todoapp-merged_res-24 D:\TodoApp\android\app\build\intermediates\merged_res\debug
 com.todoapp-debug-25 D:\TodoApp\android\app\src\debug\res
 com.todoapp-main-26 D:\TodoApp\android\app\src\main\res
+com.todoapp-packaged_res-27 D:\TodoApp\node_modules\@react-native-community\datetimepicker\android\build\intermediates\packaged_res\debug
