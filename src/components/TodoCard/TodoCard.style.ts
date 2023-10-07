@@ -26,6 +26,11 @@ const createTodoCardStyle = () => {
       fontSize: 16,
       color: '#555',
     },
+    time: {
+      fontSize: 16,
+      color: '#000',
+      marginBottom: 8,
+    },
   });
 };
 

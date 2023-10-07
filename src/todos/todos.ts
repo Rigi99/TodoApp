@@ -1,28 +1,35 @@
 import {Todo} from '../types/todo';
 
+function generateRandomId() {
+  return String(Math.random());
+}
 export const Todos: Todo[] = [
   {
-    id: '1',
+    id: generateRandomId(),
     title: 'Feladat 1',
-    date: '2023-10-10',
+    date: '10/10/2023',
+    time: '08:00',
     description: 'Ez az első feladat leírása.',
   },
   {
-    id: '2',
+    id: generateRandomId(),
     title: 'Feladat 2',
-    date: '2023-10-15',
+    date: '10/15/2023',
+    time: '14:30',
     description: 'Ez a második feladat leírása.',
   },
   {
-    id: '3',
+    id: generateRandomId(),
     title: 'Feladat 3',
-    date: '2023-10-20',
+    date: '10/20/2023',
+    time: '10:45',
     description: 'Ez a harmadik feladat leírása.',
   },
   {
-    id: '4',
-    title: 'Feladat 3',
-    date: '2023-10-25',
+    id: generateRandomId(),
+    title: 'Feladat 4',
+    date: '10/20/2023',
+    time: '09:00',
     description: 'Ez a negyedik feladat leírása.',
   },
 ];
