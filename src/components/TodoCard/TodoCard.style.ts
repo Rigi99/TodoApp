@@ -1,13 +1,14 @@
 import {StyleSheet} from 'react-native';
+import {Colors} from '../../utils/colors';
 
 const createTodoCardStyle = () => {
   return StyleSheet.create({
     card: {
-      backgroundColor: '#fff',
+      backgroundColor: Colors.LIGHT_GREY,
       borderRadius: 8,
       padding: 16,
       margin: 16,
-      shadowColor: '#000',
+      shadowColor: Colors.BLACK,
       shadowOffset: {
         width: 0,
         height: 2,
@@ -20,15 +21,15 @@ const createTodoCardStyle = () => {
       fontSize: 24,
       fontWeight: 'bold',
       marginBottom: 8,
-      color: '#000',
+      color: Colors.BLACK,
     },
     description: {
       fontSize: 16,
-      color: '#555',
+      color: Colors.GREY,
     },
     time: {
       fontSize: 16,
-      color: '#000',
+      color: Colors.BLACK,
       marginBottom: 8,
     },
   });

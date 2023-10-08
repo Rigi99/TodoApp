@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
   Alert,
-  Button,
   SafeAreaView,
   ScrollView,
   Text,
@@ -14,8 +13,13 @@ import TodoCard from '../../components/TodoCard/TodoCard';
 import {Todos} from '../../todos/todos';
 import {Todo} from '../../types/todo';
 import createHomeScreenStyle from './HomeScreen.style';
+import {StackNavigationProp} from '@react-navigation/stack';
 
-const HomeScreen: React.FC = () => {
+type HomeScreenProps = {
+  navigation: StackNavigationProp<any>;
+};
+
+const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
   const today = new Date();
   const styles = createHomeScreenStyle();
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -27,8 +31,10 @@ const HomeScreen: React.FC = () => {
     time: '',
   });
   const [showTextInput, setShowTextInput] = useState(false);
-  const [selectedTime, setSelectedTime] = useState(new Date());
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showTimePickerFrom, setShowTimePickerFrom] = useState(false);
+  const [showTimePickerTo, setShowTimePickerTo] = useState(false);
+  const [selectedTimeFrom, setSelectedTimeFrom] = useState(new Date());
+  const [selectedTimeTo, setSelectedTimeTo] = useState(new Date());
 
   useEffect(() => {
     const filtered = Todos.filter(
@@ -38,28 +44,35 @@ const HomeScreen: React.FC = () => {
       return a.time.localeCompare(b.time);
     });
     setFilteredTodos(filtered);
-  }, [selectedDate, selectedTime]);
+  }, [selectedDate, selectedTimeFrom, navigation]);
   const onChangeDate = (_event: any, selected: Date | undefined) => {
     if (selected) {
       setSelectedDate(selected);
     }
     setShowDatePicker(false);
-    setShowTimePicker(false);
+    setShowTimePickerFrom(false);
+    setShowTimePickerTo(false);
     setShowTextInput(false);
   };
 
   const toggleTextInput = () => {
     setShowTextInput(!showTextInput);
-    setShowTimePicker(false);
+    setShowTimePickerFrom(false);
+    setShowTimePickerTo(false);
   };
 
   const addTodo = () => {
-    if (newTodo.title && newTodo.description && selectedTime) {
+    if (
+      newTodo.title &&
+      newTodo.description &&
+      selectedTimeFrom &&
+      selectedTimeTo
+    ) {
       const newTodoItem = {
         id: String(Math.random()),
         date: selectedDate.toLocaleDateString(),
         ...newTodo,
-        time: formatTime(selectedTime),
+        time: `${formatTime(selectedTimeFrom)}-${formatTime(selectedTimeTo)}`,
       };
       Todos.push(newTodoItem);
       setFilteredTodos([...filteredTodos, newTodoItem]);
@@ -68,31 +81,65 @@ const HomeScreen: React.FC = () => {
         description: '',
         time: '',
       });
-      setSelectedTime(new Date());
       setShowTextInput(!showTextInput);
-      setShowTimePicker(false);
+      setShowTimePickerFrom(false);
+      setShowTimePickerTo(false);
+      setSelectedTimeFrom(new Date());
+      setSelectedTimeTo(new Date());
     } else {
       Alert.alert('Incomplete TODO');
     }
   };
 
-  const handleTimeChange = (_event: any, selected: Date | undefined) => {
-    if (selected) {
-      setSelectedTime(selected);
-    }
-    setShowTimePicker(false);
+  const cancelAddTodo = () => {
+    setShowTextInput(!showTextInput);
+    setShowTimePickerFrom(false);
+    setShowTimePickerTo(false);
+    setSelectedTimeFrom(new Date());
+    setSelectedTimeTo(new Date());
   };
 
-  const openTimePicker = () => {
-    setShowTimePicker(true);
+  const handleTimeChange = (
+    pickerType: 'from' | 'to',
+    selected: Date | undefined,
+  ) => {
+    if (selected) {
+      if (pickerType === 'from') {
+        setSelectedTimeFrom(selected);
+      } else if (pickerType === 'to') {
+        setSelectedTimeTo(selected);
+      }
+    }
+    setShowTimePickerFrom(false);
+    setShowTimePickerTo(false);
+  };
+
+  const openTimePicker = (pickerType: 'from' | 'to') => {
+    if (pickerType === 'from') {
+      setShowTimePickerFrom(true);
+    } else if (pickerType === 'to') {
+      setShowTimePickerTo(true);
+    }
+  };
+
+  const openDatePicker = () => {
+    setShowDatePicker(true);
+  };
+
+  const handleCardPress = (todoData: Todo) => {
+    navigation.navigate('TodoDetailScreen', {todoData});
+  };
+
+  const handleTextInputFocus = () => {
+    setShowTimePickerFrom(false);
+    setShowTimePickerTo(false);
   };
 
   return (
-    <SafeAreaView>
-      <Button
-        title={selectedDate.toDateString()}
-        onPress={() => setShowDatePicker(true)}
-      />
+    <SafeAreaView style={styles.container}>
+      <TouchableOpacity onPress={openDatePicker} style={styles.dateButton}>
+        <Text style={styles.dateButtonText}>{selectedDate.toDateString()}</Text>
+      </TouchableOpacity>
       {showDatePicker && (
         <DateTimePicker
           value={selectedDate}
@@ -103,43 +150,74 @@ const HomeScreen: React.FC = () => {
       )}
       <ScrollView>
         {filteredTodos.map(todo => (
-          <TodoCard
-            key={todo.id}
-            title={todo.title}
-            time={todo.time}
-            description={todo.description}
-          />
+          <TouchableOpacity key={todo.id} onPress={() => handleCardPress(todo)}>
+            <TodoCard
+              key={todo.id}
+              title={todo.title}
+              time={todo.time}
+              description={todo.description}
+            />
+          </TouchableOpacity>
         ))}
       </ScrollView>
       {showTextInput ? (
         <View style={styles.addTodoContainer}>
           <TextInput
+            style={styles.textInput}
+            placeholderTextColor="black"
             placeholder="Title"
             value={newTodo.title}
             onChangeText={text => setNewTodo({...newTodo, title: text})}
-            onFocus={() => setShowTimePicker(false)}
+            onFocus={handleTextInputFocus}
           />
           <TextInput
+            style={styles.textInput}
+            placeholderTextColor="black"
             placeholder="Description"
             value={newTodo.description}
             onChangeText={text => setNewTodo({...newTodo, description: text})}
-            onFocus={() => setShowTimePicker(false)}
+            onFocus={handleTextInputFocus}
           />
-          <TouchableOpacity
-            onPress={openTimePicker}
-            style={styles.timePickerButton}>
-            <Text>{formatTime(selectedTime)}</Text>
-          </TouchableOpacity>
-          {showTimePicker && (
+          <View style={styles.timePickersContainer}>
+            <TouchableOpacity
+              onPress={() => openTimePicker('from')}
+              style={styles.timePickerButton}>
+              <Text style={styles.selectTime}>
+                {formatTime(selectedTimeFrom)}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.selectTime}>to</Text>
+            <TouchableOpacity
+              onPress={() => openTimePicker('to')}
+              style={styles.timePickerButton}>
+              <Text style={styles.selectTime}>
+                {formatTime(selectedTimeTo)}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {showTimePickerFrom && (
             <DateTimePicker
-              value={selectedTime}
+              value={new Date()}
               mode="time"
               display="spinner"
-              onChange={handleTimeChange}
+              onChange={(_event, selected) =>
+                handleTimeChange('from', selected)
+              }
+            />
+          )}
+          {showTimePickerTo && (
+            <DateTimePicker
+              value={new Date()}
+              mode="time"
+              display="spinner"
+              onChange={(_event, selected) => handleTimeChange('to', selected)}
             />
           )}
           <TouchableOpacity onPress={addTodo} style={styles.addButton}>
             <Text style={styles.plusSign}>+</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={cancelAddTodo} style={styles.cancelButton}>
+            <Text style={styles.plusSign}>X</Text>
           </TouchableOpacity>
         </View>
       ) : (

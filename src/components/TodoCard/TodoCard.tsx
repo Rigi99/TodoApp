@@ -10,6 +10,7 @@ interface TodoCardProps {
 
 const TodoCard: React.FC<TodoCardProps> = ({title, description, time}) => {
   const styles = createTodoCardStyle();
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>
