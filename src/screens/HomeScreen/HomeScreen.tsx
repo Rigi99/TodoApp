@@ -164,13 +164,29 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
       const querySnapshot = await todosCollection.get();
       querySnapshot.forEach(doc => {
         const todoData = doc.data() as Todo;
-        const todoWithId = {...todoData, id: doc.id};
+        const todoWithId = {...todoData, id: doc.id, done: false};
         todos.push(todoWithId);
       });
       setFireBaseTodos(todos);
     } catch (error) {
       console.log(error);
       Alert.alert('Failed to fetch data from server!');
+    }
+  };
+
+  const markTodoAsDon = async (todo: DataBaseTodo) => {
+    const db = firebase.firestore();
+    const todosCollection = db.collection('todos');
+    const updatedTodo = {...todo, done: true};
+    try {
+      await todosCollection.doc(todo.id).update(updatedTodo);
+      const updatedTodos = fireBaseTodos.map(item =>
+        item.id === todo.id ? updatedTodo : item,
+      );
+      setFireBaseTodos(updatedTodos);
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Mark as done failed!');
     }
   };
 
@@ -197,6 +213,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
               title={todo.title}
               time={todo.time}
               description={todo.description}
+              done={todo.done}
+              onMarkAsDone={() => {
+                markTodoAsDon(todo);
+              }}
             />
           </TouchableOpacity>
         ))}

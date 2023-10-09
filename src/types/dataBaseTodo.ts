@@ -4,4 +4,5 @@ export interface DataBaseTodo {
   description: string;
   date: string;
   time: string;
+  done: boolean;
 }

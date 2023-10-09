@@ -20,7 +20,6 @@ const createTodoCardStyle = () => {
     title: {
       fontSize: 24,
       fontWeight: 'bold',
-      marginBottom: 8,
       color: Colors.BLACK,
     },
     description: {
@@ -30,7 +29,33 @@ const createTodoCardStyle = () => {
     time: {
       fontSize: 16,
       color: Colors.BLACK,
-      marginBottom: 8,
+    },
+    doneCard: {
+      borderRadius: 8,
+      padding: 16,
+      margin: 16,
+      shadowColor: Colors.BLACK,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 3,
+      backgroundColor: 'lightgreen',
+    },
+    doneText: {
+      backgroundColor: 'lightgreen',
+      padding: 4,
+      borderRadius: 4,
+      color: Colors.BLACK,
+      fontWeight: 'bold',
+      fontSize: 20,
+      marginLeft: 45,
+    },
+    titleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
     },
   });
 };
