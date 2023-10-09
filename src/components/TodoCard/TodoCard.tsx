@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
 import createTodoCardStyle from './TodoCard.style';
+import Done from '../../assets/SVGs/done-ring.svg'
 
 interface TodoCardProps {
   title: string;
@@ -26,7 +27,7 @@ const TodoCard: React.FC<TodoCardProps> = ({
           {title} - {time}
         </Text>
         <TouchableOpacity onPress={onMarkAsDone}>
-          <Text style={styles.doneText}>Done</Text>
+          <Done width={50} height={50} />
         </TouchableOpacity>
       </View>
       <Text style={styles.description} numberOfLines={2}>

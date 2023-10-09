@@ -215,7 +215,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
               description={todo.description}
               done={todo.done}
               onMarkAsDone={() => {
-                markTodoAsDon(todo);
+                markTodoAsDon(todo).then(() => null);
               }}
             />
           </TouchableOpacity>

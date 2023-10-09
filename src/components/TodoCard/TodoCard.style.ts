@@ -44,18 +44,12 @@ const createTodoCardStyle = () => {
       elevation: 3,
       backgroundColor: 'lightgreen',
     },
-    doneText: {
-      backgroundColor: 'lightgreen',
-      padding: 4,
-      borderRadius: 4,
-      color: Colors.BLACK,
-      fontWeight: 'bold',
-      fontSize: 20,
-      marginLeft: 45,
-    },
     titleContainer: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'space-between',
+      marginRight: 10,
+      marginLeft: 10,
     },
   });
 };
