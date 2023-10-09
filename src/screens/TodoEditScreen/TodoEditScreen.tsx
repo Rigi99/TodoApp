@@ -30,20 +30,22 @@ const TodoEditScreen: React.FC<TodoEditScreenProps> = ({navigation, route}) => {
   const styles = createTodoEditScreenStyle();
   const {todoData} = route.params;
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date(todoData.date.split('/').reverse().join('-') + 'T00:00:00Z'),
-  );
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const [month, day, year] = todoData.date.split('/').map(Number);
+    return new Date(year, month - 1, day);
+  });
+  const todoTimeParts = todoData.time.split('-');
+  const [startTime, setStartTime] = useState(todoTimeParts[0]);
+  const [endTime, setEndTime] = useState(todoTimeParts[1]);
   const [showTimePickerFrom, setShowTimePickerFrom] = useState(false);
   const [showTimePickerTo, setShowTimePickerTo] = useState(false);
-  const [selectedTimeFrom, setSelectedTimeFrom] = useState(new Date());
-  const [selectedTimeTo, setSelectedTimeTo] = useState(new Date());
+  const [selectedTimeFrom, setSelectedTimeFrom] = useState(new Date(startTime));
+  const [selectedTimeTo, setSelectedTimeTo] = useState(new Date(endTime));
+
   const [updatedTitle, setUpdatedTitle] = useState(todoData.title);
   const [updatedDescription, setUpdatedDescription] = useState(
     todoData.description,
   );
-  const todoTimeParts = todoData.time.split('-');
-  const startTime = todoTimeParts[0];
-  const endTime = todoTimeParts[1];
 
   const handleBack = () => {
     navigation.navigate('TodoDetailScreen', {todoData});
@@ -64,8 +66,10 @@ const TodoEditScreen: React.FC<TodoEditScreenProps> = ({navigation, route}) => {
     if (selected) {
       if (pickerType === 'from') {
         setSelectedTimeFrom(selected);
+        setStartTime(formatTime(selected));
       } else if (pickerType === 'to') {
         setSelectedTimeTo(selected);
+        setEndTime(formatTime(selected));
       }
     }
     setShowTimePickerFrom(false);

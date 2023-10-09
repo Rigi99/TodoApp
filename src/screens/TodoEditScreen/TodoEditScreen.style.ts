@@ -90,6 +90,7 @@ const createTodoEditScreenStyle = () => {
       color: Colors.BLACK,
       fontSize: 20,
       textAlign: 'center',
+      fontWeight: 'bold',
     },
   });
 };

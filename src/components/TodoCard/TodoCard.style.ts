@@ -49,7 +49,6 @@ const createTodoCardStyle = () => {
       alignItems: 'center',
       justifyContent: 'space-between',
       marginRight: 10,
-      marginLeft: 10,
     },
   });
 };

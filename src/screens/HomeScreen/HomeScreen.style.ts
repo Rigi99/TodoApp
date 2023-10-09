@@ -73,6 +73,7 @@ const createHomeScreenStyle = () => {
     dateButtonText: {
       color: Colors.LIGHT_GREY,
       fontSize: 20,
+      fontWeight: 'bold',
     },
     timePickersContainer: {
       flexDirection: 'row',

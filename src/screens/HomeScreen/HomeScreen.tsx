@@ -93,6 +93,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
       const todosCollection = db.collection('todos');
       try {
         await todosCollection.add(newTodoItem);
+        await getTodos();
         setNewTodo({
           title: '',
           description: '',
