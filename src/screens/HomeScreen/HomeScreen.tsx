@@ -10,10 +10,13 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import TodoCard from '../../components/TodoCard/TodoCard';
-import {Todos} from '../../todos/todos';
 import {Todo} from '../../types/todo';
 import createHomeScreenStyle from './HomeScreen.style';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {firebase} from '@react-native-firebase/firestore';
+import {DataBaseTodo} from '../../types/dataBaseTodo';
+import {useIsFocused} from '@react-navigation/native';
+import {formatTime} from '../../utils/helperFunctions';
 
 type HomeScreenProps = {
   navigation: StackNavigationProp<any>;
@@ -22,29 +25,42 @@ type HomeScreenProps = {
 const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
   const today = new Date();
   const styles = createHomeScreenStyle();
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(today);
-  const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState({
     title: '',
     description: '',
     time: '',
   });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [filteredTodos, setFilteredTodos] = useState<DataBaseTodo[]>([]);
   const [showTextInput, setShowTextInput] = useState(false);
   const [showTimePickerFrom, setShowTimePickerFrom] = useState(false);
   const [showTimePickerTo, setShowTimePickerTo] = useState(false);
   const [selectedTimeFrom, setSelectedTimeFrom] = useState(new Date());
   const [selectedTimeTo, setSelectedTimeTo] = useState(new Date());
+  const [fireBaseTodos, setFireBaseTodos] = useState<DataBaseTodo[]>([]);
+  const [dataFetched, setDataFetched] = useState(false);
+  const isInFocus = useIsFocused();
 
   useEffect(() => {
-    const filtered = Todos.filter(
+    if (!dataFetched) {
+      getTodos().then(() => setDataFetched(true));
+    }
+    const filtered = fireBaseTodos.filter(
       todo => todo.date === selectedDate.toLocaleDateString(),
     );
     filtered.sort((a, b) => {
       return a.time.localeCompare(b.time);
     });
     setFilteredTodos(filtered);
-  }, [selectedDate, selectedTimeFrom, navigation]);
+  }, [
+    selectedDate,
+    selectedTimeFrom,
+    navigation,
+    fireBaseTodos,
+    dataFetched,
+    isInFocus,
+  ]);
   const onChangeDate = (_event: any, selected: Date | undefined) => {
     if (selected) {
       setSelectedDate(selected);
@@ -61,7 +77,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
     setShowTimePickerTo(false);
   };
 
-  const addTodo = () => {
+  const addTodo = async () => {
     if (
       newTodo.title &&
       newTodo.description &&
@@ -69,23 +85,28 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
       selectedTimeTo
     ) {
       const newTodoItem = {
-        id: String(Math.random()),
         date: selectedDate.toLocaleDateString(),
         ...newTodo,
         time: `${formatTime(selectedTimeFrom)}-${formatTime(selectedTimeTo)}`,
       };
-      Todos.push(newTodoItem);
-      setFilteredTodos([...filteredTodos, newTodoItem]);
-      setNewTodo({
-        title: '',
-        description: '',
-        time: '',
-      });
-      setShowTextInput(!showTextInput);
-      setShowTimePickerFrom(false);
-      setShowTimePickerTo(false);
-      setSelectedTimeFrom(new Date());
-      setSelectedTimeTo(new Date());
+      const db = firebase.firestore();
+      const todosCollection = db.collection('todos');
+      try {
+        await todosCollection.add(newTodoItem);
+        setNewTodo({
+          title: '',
+          description: '',
+          time: '',
+        });
+        setShowTextInput(!showTextInput);
+        setShowTimePickerFrom(false);
+        setShowTimePickerTo(false);
+        setSelectedTimeFrom(new Date());
+        setSelectedTimeTo(new Date());
+      } catch (error) {
+        console.log(error);
+        Alert.alert('Failed to add todo!');
+      }
     } else {
       Alert.alert('Incomplete TODO');
     }
@@ -126,13 +147,31 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
     setShowDatePicker(true);
   };
 
-  const handleCardPress = (todoData: Todo) => {
+  const handleCardPress = (todoData: DataBaseTodo) => {
     navigation.navigate('TodoDetailScreen', {todoData});
   };
 
   const handleTextInputFocus = () => {
     setShowTimePickerFrom(false);
     setShowTimePickerTo(false);
+  };
+
+  const getTodos = async () => {
+    const todos: DataBaseTodo[] = [];
+    const db = firebase.firestore();
+    const todosCollection = db.collection('todos');
+    try {
+      const querySnapshot = await todosCollection.get();
+      querySnapshot.forEach(doc => {
+        const todoData = doc.data() as Todo;
+        const todoWithId = {...todoData, id: doc.id};
+        todos.push(todoWithId);
+      });
+      setFireBaseTodos(todos);
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Failed to fetch data from server!');
+    }
   };
 
   return (
@@ -150,9 +189,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
       )}
       <ScrollView>
         {filteredTodos.map(todo => (
-          <TouchableOpacity key={todo.id} onPress={() => handleCardPress(todo)}>
+          <TouchableOpacity
+            key={todo.title}
+            onPress={() => handleCardPress(todo)}>
             <TodoCard
-              key={todo.id}
+              key={todo.title}
               title={todo.title}
               time={todo.time}
               description={todo.description}
@@ -232,11 +273,3 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
 };
 
 export default HomeScreen;
-
-function formatTime(time: Date) {
-  const hours = time.getHours();
-  const minutes = time.getMinutes();
-  return `${hours.toString().padStart(2, '0')}:${minutes
-    .toString()
-    .padStart(2, '0')}`;
-}

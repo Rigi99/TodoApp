@@ -1,15 +1,23 @@
 import React from 'react';
-import {SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import createHomeScreenStyle from './TodoDetailScreen.style';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
 import SettingsIcon from '../../assets/SVGs/settings.svg';
 import TrashIcon from '../../assets/SVGs/trash.svg';
 import BackIcon from '../../assets/SVGs/back-button.svg';
-import {Todo} from '../../types/todo';
+import {firebase} from '@react-native-firebase/firestore';
+import {DataBaseTodo} from '../../types/dataBaseTodo';
 
 type TodoDetailRouteParams = {
-  todoData: Todo;
+  todoData: DataBaseTodo;
 };
 
 type TodoDetailScreenProps = {
@@ -27,9 +35,17 @@ const TodoDetailScreen: React.FC<TodoDetailScreenProps> = ({
   const handleEdit = () => {
     navigation.navigate('TodoEditScreen', {todoData});
   };
-  const handleDelete = () => {
-    console.log(todoData.id);
-    navigation.goBack();
+  const handleDelete = async () => {
+    const {id} = todoData;
+    const db = firebase.firestore();
+    const todosCollection = db.collection('todos');
+    try {
+      await todosCollection.doc(id).delete();
+      navigation.goBack();
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Delete failed!');
+    }
   };
 
   const handleBack = () => {
@@ -49,17 +65,21 @@ const TodoDetailScreen: React.FC<TodoDetailScreenProps> = ({
           <TrashIcon width={40} height={40} />
         </TouchableOpacity>
       </View>
-      {todoData && (
-        <>
-          <Text style={styles.title}>{todoData.title}</Text>
-          <Text style={styles.description}>{todoData.description}</Text>
-          <Text style={styles.time}>
-            {todoData.date}
-            {'\n'}
-            {todoData.time}
-          </Text>
-        </>
-      )}
+      <ScrollView>
+        {todoData && (
+          <>
+            <Text style={styles.title}>{todoData.title}</Text>
+
+            <Text style={styles.description}>{todoData.description}</Text>
+
+            <Text style={styles.time}>
+              {todoData.date}
+              {'\n'}
+              {todoData.time}
+            </Text>
+          </>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 };
